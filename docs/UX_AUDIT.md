@@ -164,3 +164,25 @@ FIX: On web, set `document.documentElement.lang` and `dir` when the language cha
 5. **07 + 08:** accessibility labels in `Bouncy` plus about 6 call sites.
 6. **03:** gendered strings. This is a content task: about 35 strings, and the voice reads them too.
 7. **12, 13, 14, 15, 16:** polish.
+
+## Fixes applied (re-audit, same 18 screens)
+| # | Change | Re-measured |
+|---|---|---|
+| 01 | Primary `#FF7A00` → `#C2410C` (logo + all main buttons; `#FF7A00` kept for decoration only) | white text 5.18:1 |
+| 02 | Home tiles: Shop `#BE185D`, Badges `#B45309`, Parents `#0369A1` | 6.04 / 5.02 / 5.93:1 |
+| 03 | Girl heroes: 42 feminine phrase swaps in situations (`src/content/feminine.ts`) + feminine UI strings; read-aloud uses the same text. Pre-profile screens reworded neutral | probe: 0 gendered imperatives on child screens |
+| 04 | "Start" is always active; a short name shakes the field, plays the wrong sound, shows "اكتب اسم البطل الأول ✏️" and focuses the input | verified in walkthrough |
+| 05 | Progress dots show the whole world (finished ones filled) | 12 dots for a 12-situation world |
+| 06 | Counter noun follows CLDR (3–10 → مواقف) | "٠ / ٦ مواقف" |
+| 07 | `accessibilityRole="button"` + labels on every tappable (answers, speaker "اسمع السؤال", characters by name, tiles, keypad, toggles) | unnamed controls: 0 on all 18 screens |
+| 08 | Name field labelled | accessible name present |
+| 09 | Off toggle `#71717A` | 4.83:1 |
+| 10 | Locked prices `#57534E` + "محتاج ٤٥ كمان" line | 6.99:1 |
+| 11 | `good` → `#15803D`, `bad` → `#BE123C` | 4.79–6.01:1 |
+| 12 | Leading praise word removed from all 30 lessons (ar + en) | no double "برافو" |
+| 13 | Arabic percent `٪` | "٧٥٪" |
+| 14 | Parents' corner: section titles 22px, child cards collapsible (first open) | headline/body ≥ 1.4 |
+| 15 | Toggles `minHeight: 48` | 48px |
+| 16 | Web sets `<html lang dir>` from the chosen language | `lang="ar" dir="rtl"` |
+
+Contrast after fixes: 0 text failures. The 10 remaining flags are emoji glyphs on coloured tiles (false positives: emoji are not drawn in the text colour). Runtime errors: 0.

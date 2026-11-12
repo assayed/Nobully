@@ -98,3 +98,16 @@ export function reactMood(slot: CastSlot, outcome: 'none' | 'good' | 'wrong'): M
   if (role === 'hero') return 'sad';
   return 'surprised';
 }
+
+/** Spoken names for screen readers (TalkBack). */
+export const CAST_NAMES: Record<CastId | 'hero', { ar: string; en: string }> = {
+  hero: { ar: 'البطل', en: 'Hero' },
+  omar: { ar: 'عمر', en: 'Omar' }, salma: { ar: 'سلمى', en: 'Salma' }, karim: { ar: 'كريم', en: 'Karim' },
+  jana: { ar: 'جنى', en: 'Jana' }, ziad: { ar: 'زياد', en: 'Ziad' }, hamza: { ar: 'حمزة', en: 'Hamza' },
+  laila: { ar: 'ليلى', en: 'Laila' }, farida: { ar: 'فريدة', en: 'Farida' }, adam: { ar: 'آدم', en: 'Adam' },
+  bully: { ar: 'ولد', en: 'A boy' }, bully2: { ar: 'ولد', en: 'A boy' }, kid1: { ar: 'صاحب', en: 'A friend' },
+  kid2: { ar: 'صاحبة', en: 'A friend' }, teacher: { ar: 'المُدرّسة', en: 'Teacher' }, mom: { ar: 'ماما', en: 'Mum' },
+  dad: { ar: 'بابا', en: 'Dad' }, grandma: { ar: 'تيتة', en: 'Grandma' }, oldman: { ar: 'راجل كبير', en: 'Old man' },
+  brother: { ar: 'الأخ الصغير', en: 'Little brother' }, sister: { ar: 'الأخت', en: 'Sister' },
+  stranger: { ar: 'شخص غريب', en: 'A stranger' }, guard: { ar: 'الأمن', en: 'Security guard' },
+};

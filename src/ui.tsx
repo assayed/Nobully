@@ -33,10 +33,13 @@ export function Screen({ children, bg = C.bg, style }: { children: ReactNode; bg
 const APressable = Animated.createAnimatedComponent(Pressable);
 
 /** A pressable that squishes and springs back, with a tap sound. */
-export function Bouncy({ onPress, children, style, disabled, silent }: { onPress?: () => void; children: ReactNode; style?: StyleProp<ViewStyle>; disabled?: boolean; silent?: boolean }) {
+export function Bouncy({ onPress, children, style, disabled, silent, label }: { onPress?: () => void; children: ReactNode; style?: StyleProp<ViewStyle>; disabled?: boolean; silent?: boolean; label?: string }) {
   const s = useRef(new Animated.Value(1)).current;
   return (
     <APressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
       onPressIn={() => Animated.spring(s, { toValue: 0.93, useNativeDriver: true, speed: 50 }).start()}
       onPressOut={() => Animated.spring(s, { toValue: 1, useNativeDriver: true, friction: 3 }).start()}
@@ -50,7 +53,7 @@ export function Bouncy({ onPress, children, style, disabled, silent }: { onPress
 
 export function BigButton({ label, onPress, color = C.primary, icon, disabled, style }: { label: string; onPress: () => void; color?: string; icon?: string; disabled?: boolean; style?: StyleProp<ViewStyle> }) {
   return (
-    <Bouncy onPress={onPress} disabled={disabled} style={[styles.big, { backgroundColor: disabled ? '#D4D4D8' : color, borderBottomColor: 'rgba(0,0,0,0.2)' }, style]}>
+    <Bouncy label={label} onPress={onPress} disabled={disabled} style={[styles.big, { backgroundColor: disabled ? '#D4D4D8' : color, borderBottomColor: 'rgba(0,0,0,0.2)' }, style]}>
       {icon ? <Txt style={{ fontSize: 22 }}>{icon}</Txt> : null}
       <Txt w="black" center style={{ color: '#fff', fontSize: 20 }}>{label}</Txt>
     </Bouncy>
@@ -89,13 +92,13 @@ export function CoinPill({ value, big }: { value: number; big?: boolean }) {
 }
 
 export function TopBar({ title, coins, onBack }: { title?: string; coins?: number; onBack?: () => void }) {
-  const { rtl } = useApp();
+  const { rtl, t } = useApp();
   return (
     <View style={styles.top}>
-      <Bouncy onPress={onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/')))} style={styles.back}>
+      <Bouncy label={t('back')} onPress={onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/')))} style={styles.back}>
         <Txt w="black" center style={{ fontSize: 22, lineHeight: 28 }}>{rtl ? '→' : '←'}</Txt>
       </Bouncy>
-      <Txt w="black" style={{ flex: 1, fontSize: 20, marginHorizontal: 10 }} numberOfLines={1}>{title}</Txt>
+      <Txt w="black" accessibilityRole="header" style={{ flex: 1, fontSize: 20, marginHorizontal: 10 }} numberOfLines={1}>{title}</Txt>
       {coins !== undefined && <CoinPill value={coins} />}
     </View>
   );

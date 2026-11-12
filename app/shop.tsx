@@ -47,7 +47,7 @@ export default function Shop() {
           const on = owned && isEquipped(active.look, item);
           const afford = active.coins >= item.price;
           return (
-            <Bouncy key={item.id} onPress={() => tap(item)} style={[styles.item, on && styles.on]}>
+            <Bouncy key={item.id} label={`${item[lang]}, ${owned ? (on ? t('remove') : t('wear')) : item.price}`} onPress={() => tap(item)} style={[styles.item, on && styles.on]}>
               <View style={styles.art}>
                 {item.kind === 'pet'
                   ? <Prop id={item.value as never} size={64} />
@@ -61,8 +61,11 @@ export default function Shop() {
               ) : (
                 <View style={[styles.tag, { backgroundColor: afford ? '#FEF3C7' : '#F5F5F4', flexDirection: 'row', gap: 4, justifyContent: 'center' }]}>
                   <Prop id="coin" size={16} />
-                  <Txt w="black" style={{ fontSize: 13, color: afford ? '#713F12' : '#A8A29E' }}>{n(item.price)}</Txt>
+                  <Txt w="black" style={{ fontSize: 13, color: afford ? '#713F12' : C.priceLocked }}>{n(item.price)}</Txt>
                 </View>
+              )}
+              {!owned && !afford && (
+                <Txt center style={{ fontSize: 11, lineHeight: 16, color: C.priceLocked }}>{t('needMore').replace('{n}', n(item.price - active.coins))}</Txt>
               )}
             </Bouncy>
           );

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { scenarioById, scenariosOf, WORLDS } from '../src/content/scenarios';
 import { levelOf, newProfile, Profile, RULES } from '../src/game/rules';
+import { percent } from '../src/i18n';
 import { buzz, play } from '../src/sound';
 import { useApp } from '../src/store';
 import { C, shadow } from '../src/theme';
@@ -50,7 +51,7 @@ function PinGate({ hasPin, onOk }: { hasPin: boolean; onOk: () => void }) {
       <View style={styles.pad}>
         {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map((d, i) => (
           d ? (
-            <Bouncy key={i} onPress={() => press(d)} style={styles.key}>
+            <Bouncy key={i} label={d === '⌫' ? 'delete' : d} onPress={() => press(d)} style={styles.key}>
               <Txt w="black" center style={{ fontSize: 26 }}>{d}</Txt>
             </Bouncy>
           ) : <View key={i} style={[styles.key, { backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0 }]} />
@@ -65,7 +66,7 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   return (
     <View style={styles.row}>
       <Txt w="bold" style={{ flex: 1 }}>{label}</Txt>
-      <Bouncy onPress={() => onChange(!value)} style={[styles.toggle, { backgroundColor: value ? C.good : '#D4D4D8' }]}>
+      <Bouncy label={`${label}: ${value ? t('on') : t('off')}`} onPress={() => onChange(!value)} style={[styles.toggle, { backgroundColor: value ? C.good : C.off }]}>
         <Txt w="black" center style={{ color: '#fff' }}>{value ? t('on') : t('off')}</Txt>
       </Bouncy>
     </View>
@@ -77,15 +78,16 @@ function Dashboard() {
   const { t, n, lang, profiles } = app;
   return (
     <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}>
+      <Txt w="black" accessibilityRole="header" style={styles.section}>⚙️ {t('settings')}</Txt>
       <Card style={{ gap: 10 }}>
         <View style={styles.row}>
           <Txt w="bold" style={{ flex: 1 }}>🌐 Language / اللغة</Txt>
-          <Bouncy onPress={() => app.set({ lang: lang === 'ar' ? 'en' : 'ar' })} style={[styles.toggle, { backgroundColor: C.purple }]}>
+          <Bouncy label={t('language')} onPress={() => app.set({ lang: lang === 'ar' ? 'en' : 'ar' })} style={[styles.toggle, { backgroundColor: C.purple }]}>
             <Txt w="black" center style={{ color: '#fff' }}>{t('language')}</Txt>
           </Bouncy>
         </View>
         <Toggle label={`🔊 ${t('readAloud')}`} value={app.readAloud} onChange={(v) => app.set({ readAloud: v })} />
-        <Toggle label={`🎵 ${lang === 'ar' ? 'الموسيقى' : 'Music'}`} value={app.music} onChange={(v) => app.set({ music: v })} />
+        <Toggle label={`🎵 ${t('music')}`} value={app.music} onChange={(v) => app.set({ music: v })} />
         <Toggle label={`🔔 ${t('sounds')}`} value={app.sounds} onChange={(v) => app.set({ sounds: v })} />
       </Card>
 
@@ -95,7 +97,8 @@ function Dashboard() {
         <Txt style={{ color: C.muted, fontSize: 13 }}>{lang === 'ar' ? `كل بطل بيبدأ بـ ${n(RULES.START_COINS)} عملة.` : `Every hero starts with ${RULES.START_COINS} coins.`}</Txt>
       </Card>
 
-      {profiles.map((p) => <ChildReport key={p.id} p={p} />)}
+      <Txt w="black" accessibilityRole="header" style={styles.section}>👧👦 {t('children')}</Txt>
+      {profiles.map((p, i) => <ChildReport key={p.id} p={p} startOpen={i === 0} />)}
 
       <Card style={{ gap: 6, backgroundColor: '#FEF3C7' }}>
         <Txt w="black">☎️ {t('helpline')}</Txt>
@@ -106,9 +109,10 @@ function Dashboard() {
   );
 }
 
-function ChildReport({ p }: { p: Profile }) {
+function ChildReport({ p, startOpen }: { p: Profile; startOpen: boolean }) {
   const { t, n, lang, upsertProfile, removeProfile } = useApp();
   const [confirm, setConfirm] = useState<'reset' | 'delete' | null>(null);
+  const [open, setOpen] = useState(startOpen);
   const answered = Object.values(p.answers).filter((a) => a.done);
   const first = answered.filter((a) => a.firstTry).length;
   const acc = answered.length ? first / answered.length : 0;
@@ -124,15 +128,16 @@ function ChildReport({ p }: { p: Profile }) {
 
   return (
     <Card style={{ gap: 10 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <Bouncy label={p.name} onPress={() => setOpen(!open)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <HeroAvatar look={p.look} size={56} still />
         <View style={{ flex: 1 }}>
           <Txt w="black" style={{ fontSize: 20 }}>{p.name}</Txt>
           <Txt style={{ color: C.muted }}>{lvl.icon} {lvl[lang]} · 🪙 {n(p.coins)} · 🏅 {n(p.badges.length)}</Txt>
+          <Txt w="bold" style={{ fontSize: 14 }}>{t('accuracy')}: {percent(lang, Math.round(acc * 100))} ({n(first)}/{n(answered.length)})</Txt>
         </View>
-      </View>
-
-      <Txt w="bold">{t('accuracy')}: {n(Math.round(acc * 100))}% ({n(first)}/{n(answered.length)})</Txt>
+        <Txt w="black" style={{ fontSize: 22 }}>{open ? '▲' : '▼'}</Txt>
+      </Bouncy>
+      {open && <>
       <Bar value={acc} color={C.good} />
 
       <Txt w="bold" style={{ marginTop: 4 }}>📊 {t('progress')}</Txt>
@@ -170,6 +175,7 @@ function ChildReport({ p }: { p: Profile }) {
           <Txt w="bold" center style={{ fontSize: 13, color: C.bad }}>{confirm === 'delete' ? t('sure') : `🗑️ ${t('deleteProfile')}`}</Txt>
         </Bouncy>
       </View>
+      </>}
     </Card>
   );
 }
@@ -179,7 +185,8 @@ const styles = StyleSheet.create({
   pad: { flexDirection: 'row', flexWrap: 'wrap', width: 270, gap: 12, justifyContent: 'center', direction: 'ltr' },
   key: { width: 78, height: 64, borderRadius: 18, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', ...shadow },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  toggle: { borderRadius: 16, paddingHorizontal: 14, paddingVertical: 6, minWidth: 90 },
+  toggle: { borderRadius: 16, paddingHorizontal: 14, minHeight: 48, justifyContent: 'center', minWidth: 90 },
+  section: { fontSize: 22, marginTop: 4 },
   mistake: { borderStartWidth: 5, backgroundColor: '#F8FAFC', borderRadius: 12, padding: 10, gap: 2 },
   danger: { flex: 1, borderRadius: 14, padding: 10 },
 });

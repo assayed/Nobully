@@ -36,7 +36,7 @@ export default function Title() {
   return (
     <Screen bg="#BAE6FD">
       <View style={styles.langRow}>
-        <Bouncy onPress={() => set({ lang: lang === 'ar' ? 'en' : 'ar' })} style={styles.lang}>
+        <Bouncy label={t('language')} onPress={() => set({ lang: lang === 'ar' ? 'en' : 'ar' })} style={styles.lang}>
           <Txt w="bold" center>🌐 {t('language')}</Txt>
         </Bouncy>
       </View>
@@ -51,7 +51,7 @@ export default function Title() {
           <SceneView spec={TITLE_SCENE} hero={{ gender: 'boy', skin: 1, shirt: '#F97316', cape: '#DC2626' }} outcome="none" outcomeKey={0} />
           <Animated.View style={{ opacity: pulse, alignItems: 'center' }}>
             <View style={styles.prompt}>
-              <Txt w="black" center style={{ fontSize: 22, color: '#fff' }}>👆 {lang === 'ar' ? 'دوس عشان تبدأ' : 'Tap to start'}</Txt>
+              <Txt w="black" center style={{ fontSize: 22, color: '#fff' }}>{t('tapPrompt')}</Txt>
             </View>
           </Animated.View>
         </View>
@@ -63,7 +63,8 @@ export default function Title() {
 const styles = StyleSheet.create({
   langRow: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 16, paddingTop: 8 },
   lang: { backgroundColor: '#fff', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
-  logo: { backgroundColor: C.primary, paddingHorizontal: 28, paddingVertical: 6, borderRadius: 28, borderBottomWidth: 8, borderBottomColor: C.primaryDark },
+  logo: { backgroundColor: C.primary, // white 48px bold = 5.18:1
+    paddingHorizontal: 28, paddingVertical: 6, borderRadius: 28, borderBottomWidth: 8, borderBottomColor: C.primaryDark },
   logoText: { fontSize: 48, color: '#fff', lineHeight: 72, textShadowColor: '#7C2D12', textShadowRadius: 0, textShadowOffset: { width: 3, height: 3 } },
   prompt: { backgroundColor: C.purple, borderRadius: 30, paddingHorizontal: 26, paddingVertical: 8 },
 });

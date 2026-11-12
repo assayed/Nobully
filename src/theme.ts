@@ -3,11 +3,14 @@ export const C = {
   card: '#FFFFFF',
   ink: '#1F2937',
   muted: '#6B7280',
-  primary: '#FF7A00',
-  primaryDark: '#C2410C',
-  good: '#16A34A',
+  off: '#71717A', // 'off' toggle, white 4.83:1
+  priceLocked: '#57534E', // 6.99:1 on #F5F5F4
+  primary: '#C2410C', // white text 5.18:1 (passes even for normal-size text); was #FF7A00 at 2.61:1
+  primaryDark: '#7C2D12',
+  brand: '#FF7A00', // decoration only, never behind text
+  good: '#15803D', // white 5.02:1
   goodSoft: '#DCFCE7',
-  bad: '#E11D48',
+  bad: '#BE123C', // white 6.0:1
   badSoft: '#FFE4E6',
   coin: '#FACC15',
   purple: '#7C3AED',

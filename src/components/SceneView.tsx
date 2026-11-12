@@ -3,7 +3,8 @@ import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import Background from '../art/Backgrounds';
 import Character from '../art/Character';
 import Prop from '../art/Props';
-import { CAST, CastSlot, reactMood, SceneSpec } from '../art/scenes';
+import { CAST, CAST_NAMES, CastSlot, reactMood, SceneSpec } from '../art/scenes';
+import { useApp } from '../store';
 import { heroToLook } from '../game/hero';
 import { HeroLook } from '../game/rules';
 import { play } from '../sound';
@@ -55,6 +56,7 @@ export default function SceneView({ spec, hero, outcome, outcomeKey }: Props) {
 }
 
 function Actor({ slot, hero, k, outcome, outcomeKey, delay }: { slot: CastSlot; hero: HeroLook; k: number; outcome: Outcome; outcomeKey: number; delay: number }) {
+  const { lang } = useApp();
   const look = slot.c === 'hero' ? heroToLook(hero) : CAST[slot.c];
   const scale = (slot.s ?? 1) * (look.age === 'adult' || look.age === 'old' ? 1.12 : look.age === 'small' ? 0.8 : 1);
   const width = 70 * scale * k;
@@ -92,6 +94,8 @@ function Actor({ slot, hero, k, outcome, outcomeKey, delay }: { slot: CastSlot; 
   return (
     <Animated.View style={{ position: 'absolute', left: slot.x * k - width / 2, top: baseY - height, transform: [{ translateY: Animated.add(bob, jump) }] }}>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={CAST_NAMES[slot.c][lang]}
         onPress={() => {
           play('tap');
           hop(16 * k);

@@ -18,7 +18,13 @@ const OPTION_COLORS = ['#3B82F6', '#F59E0B', '#A855F7'];
 
 export default function Play({ ids, mode, title, color }: { ids: string[]; mode: 'world' | 'daily'; title: string; color: string }) {
   const app = useApp();
-  const { active: profile, lang, t, n, readAloud } = app;
+  const { active: profile, lang, t, n, readAloud, L } = app;
+  // Play the unfinished situations (all of them once a world is complete), but show every
+  // situation of the world in the progress dots so the count matches the home card.
+  const queue = useMemo(() => {
+    const todo = ids.filter((id) => mode === 'daily' || !profile?.answers[id]?.done);
+    return todo.length ? todo : ids;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [idx, setIdx] = useState(0);
   const [wrongs, setWrongs] = useState<number[]>([]);
   const [outcome, setOutcome] = useState<Outcome>('none');
@@ -28,7 +34,7 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
   const [firstTries, setFirstTries] = useState(0);
   const [badge, setBadge] = useState<string | null>(null);
 
-  const sc = scenarioById(ids[idx]);
+  const sc = scenarioById(queue[idx]);
   const practiceRef = useRef(false);
   const startRef = useRef('');
   if (sc && startRef.current !== sc.id + idx) {
@@ -48,8 +54,8 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
 
   useEffect(() => {
     if (!sc || !readAloud) return;
-    const opts = order.map((i) => sc.options[i].text[lang]).join(` ${t('or')} `);
-    say(`${sc.question[lang]} ${opts}`, lang);
+    const opts = order.map((i) => L(sc.options[i].text)).join(` ${t('or')} `);
+    say(`${L(sc.question)} ${opts}`, lang);
     return () => hush();
   }, [sc, order, lang, readAloud]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -69,7 +75,7 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
   }, [outcome, okey, panel]);
 
   if (!profile) return null;
-  if (finished || !sc) return <Finished title={title} firstTries={firstTries} total={ids.length} mode={mode} />;
+  if (finished || !sc) return <Finished title={title} firstTries={firstTries} total={queue.length} mode={mode} />;
 
   const spec = SCENES[sc.id];
   const icons = OPTION_ICONS[sc.id] ?? [];
@@ -87,14 +93,14 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
       play('good');
       setTimeout(() => play('coin'), 350);
       buzz('good');
-      if (readAloud) say(`${t('great')} ${sc.lesson[lang]}`, lang);
+      if (readAloud) say(`${t('great')} ${L(sc.lesson)}`, lang);
       if (res.newBadges.length) setTimeout(() => { setBadge(res.newBadges[0]); play('win'); }, 900);
     } else {
       setOutcome('wrong');
       setWrongs((w) => [...w, i]);
       play('wrong');
       buzz('wrong');
-      if (readAloud) say(sc.options[i].why?.[lang] ?? t('oops'), lang);
+      if (readAloud) say(sc.options[i].why ? L(sc.options[i].why!) : t('oops'), lang);
     }
   };
 
@@ -102,11 +108,12 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
     hush();
     setWrongs([]);
     setOutcome('none');
-    if (idx + 1 >= ids.length) { play('win'); setFinished(true); } else setIdx(idx + 1);
+    if (idx + 1 >= queue.length) { play('win'); setFinished(true); } else setIdx(idx + 1);
   };
 
   const lastWrong = wrongs[wrongs.length - 1];
-  const feedbackText = outcome === 'good' ? sc.lesson[lang] : outcome === 'wrong' ? sc.options[lastWrong]?.why?.[lang] ?? '' : '';
+  const lastWhy = sc.options[lastWrong]?.why;
+  const feedbackText = outcome === 'good' ? L(sc.lesson) : outcome === 'wrong' && lastWhy ? L(lastWhy) : '';
 
   return (
     <Screen bg={C.bg}>
@@ -114,9 +121,11 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 4, gap: 12, paddingBottom: 40 }}>
         {/* progress dots */}
         <View style={styles.dots}>
-          {ids.map((id, i) => (
-            <View key={id + i} style={[styles.dot, { backgroundColor: i < idx ? color : i === idx ? C.primary : '#E5E7EB', width: i === idx ? 26 : 12 }]} />
-          ))}
+          {ids.map((id) => {
+            const current = id === sc.id;
+            const done = !!profile.answers[id]?.done;
+            return <View key={id} style={[styles.dot, { backgroundColor: current ? C.primary : done ? color : '#E5E7EB', width: current ? 26 : 12 }]} />;
+          })}
         </View>
         {practice && <Txt center style={{ color: C.muted }}>🔁 {t('practice')}</Txt>}
 
@@ -140,8 +149,8 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
         </View>
 
         <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Txt w="bold" style={{ flex: 1, fontSize: 19, lineHeight: 30 }}>{sc.question[lang]}</Txt>
-          <Bouncy onPress={() => say(`${sc.question[lang]} ${order.map((i) => sc.options[i].text[lang]).join(` ${t('or')} `)}`, lang)} style={styles.speaker}>
+          <Txt w="bold" style={{ flex: 1, fontSize: 19, lineHeight: 30 }}>{L(sc.question)}</Txt>
+          <Bouncy label={t('listen')} onPress={() => say(`${L(sc.question)} ${order.map((i) => L(sc.options[i].text)).join(` ${t('or')} `)}`, lang)} style={styles.speaker}>
             <Txt style={{ fontSize: 24 }} center>🔊</Txt>
           </Bouncy>
         </Card>
@@ -154,7 +163,7 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
               </Txt>
               <Txt center style={{ fontSize: 18, lineHeight: 30 }}>{feedbackText}</Txt>
               {outcome === 'good' ? (
-                <BigButton label={idx + 1 >= ids.length ? t('finish') : t('next')} icon="⭐" color={C.good} onPress={next} style={{ alignSelf: 'stretch' }} />
+                <BigButton label={idx + 1 >= queue.length ? t('finish') : t('next')} icon="⭐" color={C.good} onPress={next} style={{ alignSelf: 'stretch' }} />
               ) : (
                 <BigButton label={t('tryAgain')} icon="🔄" color={C.primary} onPress={() => setOutcome('none')} style={{ alignSelf: 'stretch' }} />
               )}
@@ -166,11 +175,11 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
               const o = sc.options[i];
               const used = wrongs.includes(i);
               return (
-                <Bouncy key={i} onPress={() => choose(i)} disabled={used} silent style={[styles.option, { borderColor: used ? '#E5E7EB' : OPTION_COLORS[pos], opacity: used ? 0.45 : 1 }]}>
+                <Bouncy key={i} label={L(o.text)} onPress={() => choose(i)} disabled={used} silent style={[styles.option, { borderColor: used ? '#E5E7EB' : OPTION_COLORS[pos], opacity: used ? 0.45 : 1 }]}>
                   <View style={[styles.optIcon, { backgroundColor: used ? '#F3F4F6' : OPTION_COLORS[pos] + '22' }]}>
                     <Txt center style={{ fontSize: 30, lineHeight: 42 }}>{used ? '❌' : icons[i] ?? '❓'}</Txt>
                   </View>
-                  <Txt w="bold" style={{ flex: 1, fontSize: 18, lineHeight: 28, textDecorationLine: used ? 'line-through' : 'none' }}>{o.text[lang]}</Txt>
+                  <Txt w="bold" style={{ flex: 1, fontSize: 18, lineHeight: 28, textDecorationLine: used ? 'line-through' : 'none' }}>{L(o.text)}</Txt>
                 </Bouncy>
               );
             })}

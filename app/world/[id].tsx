@@ -9,13 +9,8 @@ export default function WorldScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { active, lang } = useApp();
   const world = worldById(id);
-  // freeze the list when the screen opens, so finishing a situation doesn't reshuffle the run
-  const ids = useMemo(() => {
-    if (!world || !active) return [];
-    const all = scenariosOf(world.id);
-    const todo = all.filter((s) => !active.answers[s.id]?.done);
-    return (todo.length ? todo : all).map((s) => s.id);
-  }, [world?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Play decides which situations to run; it receives the whole world so progress shows every situation.
+  const ids = useMemo(() => (world ? scenariosOf(world.id).map((s) => s.id) : []), [world?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!active) return <Redirect href="/profiles" />;
   if (!world) return <Redirect href="/home" />;
   return <Play ids={ids} mode="world" title={`${world.emoji} ${world.title[lang]}`} color={world.color} />;
