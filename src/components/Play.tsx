@@ -219,11 +219,12 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
                   <View style={{ flex: 1, gap: 6 }}>
                     <Txt w="bold" style={{ fontSize: 18, lineHeight: 28, textDecorationLine: used ? 'line-through' : 'none' }}>{lit && !used ? '🔊 ' : ''}{L(o.text)}</Txt>
                     {isPicked && (
-                      <Loop kind="pulse" ms={900} style={{ alignSelf: 'flex-start' }}>
+                      <View style={{ alignSelf: 'flex-start' }}>
+                      <Loop kind="pulse" ms={900} style={[StyleSheet.absoluteFill, styles.pickGlow, { backgroundColor: col }]} pointerEvents="none"><View /></Loop>
                       <Bouncy label={t('pickThis')} onPress={() => choose(i)} silent style={[styles.pick, { backgroundColor: col }]}>
                         <Txt w="black" center style={{ color: '#fff', fontSize: 18 }}>✓ {t('pickThis')}</Txt>
                       </Bouncy>
-                      </Loop>
+                      </View>
                     )}
                   </View>
                 </Bouncy>
@@ -295,6 +296,7 @@ const styles = StyleSheet.create({
   option: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 22, borderWidth: 3, borderBottomWidth: 6, padding: 10, ...shadow },
   optPic: { width: 128, height: 104, borderRadius: 18, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 4, overflow: 'hidden' },
   num: { position: 'absolute', top: 4, start: 4, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', zIndex: 2 },
+  pickGlow: { borderRadius: 18, opacity: 0.35, margin: -5 },
   pick: { borderRadius: 16, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
   overlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: 30 },
   badgeCard: { backgroundColor: '#fff', borderRadius: 30, padding: 24, alignItems: 'center', width: '100%', maxWidth: 360, overflow: 'hidden' },

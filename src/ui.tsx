@@ -156,10 +156,17 @@ const styles = StyleSheet.create({
 /** Springs its children in (fade + rise + grow) after `delay` ms. Change `k` to replay. */
 export function Pop({ children, delay = 0, style, k }: { children: ReactNode; delay?: number; style?: StyleProp<ViewStyle>; k?: string | number }) {
   const v = useRef(new Animated.Value(0)).current;
+  // Once settled, render a plain View: on Android (new architecture) a native-driven transform
+  // stays at its start value for touch handling, which made the cards ignore taps.
+  const [done, setDone] = useState(false);
   useEffect(() => {
+    setDone(false);
     v.setValue(0);
-    Animated.sequence([Animated.delay(delay), Animated.spring(v, { toValue: 1, friction: 6, tension: 80, useNativeDriver: true })]).start();
+    const a = Animated.sequence([Animated.delay(delay), Animated.spring(v, { toValue: 1, friction: 6, tension: 80, useNativeDriver: true })]);
+    a.start(() => setDone(true));
+    return () => a.stop();
   }, [k, delay, v]);
+  if (done) return <View style={style}>{children}</View>;
   return (
     <Animated.View style={[style, { opacity: v.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1, 1] }), transform: [
       { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) },
@@ -168,8 +175,8 @@ export function Pop({ children, delay = 0, style, k }: { children: ReactNode; de
   );
 }
 
-/** A gentle endless motion: 'bob' up and down, 'pulse' grow and shrink, 'swing' rock side to side, 'spin'. */
-export function Loop({ children, kind = 'bob', ms = 1400, style }: { children: ReactNode; kind?: 'bob' | 'pulse' | 'swing' | 'spin'; ms?: number; style?: StyleProp<ViewStyle> }) {
+/** Decorative only: never put a button inside (a moving transform breaks taps on Android). A gentle endless motion: 'bob' up and down, 'pulse' grow and shrink, 'swing' rock side to side, 'spin'. */
+export function Loop({ children, kind = 'bob', ms = 1400, style, pointerEvents }: { children: ReactNode; kind?: 'bob' | 'pulse' | 'swing' | 'spin'; ms?: number; style?: StyleProp<ViewStyle>; pointerEvents?: 'none' }) {
   const v = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     const a = kind === 'spin'
@@ -185,5 +192,5 @@ export function Loop({ children, kind = 'bob', ms = 1400, style }: { children: R
     : kind === 'pulse' ? [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] }) }]
     : kind === 'swing' ? [{ rotate: v.interpolate({ inputRange: [0, 1], outputRange: ['-6deg', '6deg'] }) }]
     : [{ rotate: v.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }];
-  return <Animated.View style={[style, { transform: t }]}>{children}</Animated.View>;
+  return <Animated.View pointerEvents={pointerEvents} style={[style, { transform: t }]}>{children}</Animated.View>;
 }
