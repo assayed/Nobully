@@ -6,7 +6,7 @@ import SceneView from '../src/components/SceneView';
 import { play } from '../src/sound';
 import { useApp } from '../src/store';
 import { C } from '../src/theme';
-import { Bouncy, Screen, Txt } from '../src/ui';
+import { Bouncy, Loop, Pop, Screen, Txt } from '../src/ui';
 
 const TITLE_SCENE: SceneSpec = {
   bg: 'yard',
@@ -43,12 +43,21 @@ export default function Title() {
       <Pressable style={{ flex: 1 }} onPress={() => { play('good'); router.push('/profiles'); }}>
         <View style={{ flex: 1, justifyContent: 'center', padding: 16, gap: 18 }}>
           <Animated.View style={{ alignItems: 'center', transform: [{ scale: pop }, { rotate: pop.interpolate({ inputRange: [0, 1], outputRange: ['-12deg', '-3deg'] }) }] }}>
-            <View style={styles.logo}>
-              <Txt w="black" center style={styles.logoText}>{t('appName')}</Txt>
-            </View>
+            <Loop kind="swing" ms={3000}>
+              <View style={styles.logo}>
+                <Txt w="black" center style={styles.logoText}>{t('appName')}</Txt>
+              </View>
+            </Loop>
             <Txt w="bold" center style={{ fontSize: 18, color: '#0C4A6E', marginTop: 8 }}>{t('tagline')}</Txt>
           </Animated.View>
           <SceneView spec={TITLE_SCENE} hero={{ gender: 'boy', skin: 1, shirt: '#F97316', cape: '#DC2626' }} outcome="none" outcomeKey={0} />
+          <Pop delay={700} style={{ alignItems: 'center' }}>
+            <Loop kind="bob" ms={2400}>
+              <View style={styles.credit}>
+                <Txt w="bold" center style={{ fontSize: 15, color: '#0C4A6E' }}>🏫 {t('credit')} ✨</Txt>
+              </View>
+            </Loop>
+          </Pop>
           <Animated.View style={{ opacity: pulse, alignItems: 'center' }}>
             <View style={styles.prompt}>
               <Txt w="black" center style={{ fontSize: 22, color: '#fff' }}>{t('tapPrompt')}</Txt>
@@ -66,5 +75,6 @@ const styles = StyleSheet.create({
   logo: { backgroundColor: C.primary, // white 48px bold = 5.18:1
     paddingHorizontal: 28, paddingVertical: 6, borderRadius: 28, borderBottomWidth: 8, borderBottomColor: C.primaryDark },
   logoText: { fontSize: 48, color: '#fff', lineHeight: 72, textShadowColor: '#7C2D12', textShadowRadius: 0, textShadowOffset: { width: 3, height: 3 } },
+  credit: { backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 18, paddingHorizontal: 16, paddingVertical: 6, borderWidth: 2, borderColor: '#7DD3FC' },
   prompt: { backgroundColor: C.purple, borderRadius: 30, paddingHorizontal: 26, paddingVertical: 8 },
 });

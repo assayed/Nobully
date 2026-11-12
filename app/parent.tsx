@@ -105,6 +105,7 @@ function Dashboard() {
         <Txt style={{ fontSize: 14, lineHeight: 24 }}>{t('tellAdult')}</Txt>
       </Card>
       <Txt center style={{ color: C.muted, fontSize: 13, lineHeight: 22 }}>🔐 {t('privacy')}</Txt>
+      <Txt w="bold" center style={{ color: C.muted, fontSize: 13 }}>🏫 {t('credit')}</Txt>
     </ScrollView>
   );
 }

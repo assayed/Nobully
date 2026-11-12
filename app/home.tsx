@@ -9,7 +9,7 @@ import { play } from '../src/sound';
 import { countNoun } from '../src/i18n';
 import { useApp } from '../src/store';
 import { C, shadow } from '../src/theme';
-import { Bar, Bouncy, CoinPill, HeroAvatar, Screen, Txt } from '../src/ui';
+import { Bar, Bouncy, CoinPill, HeroAvatar, Loop, Pop, Screen, Txt } from '../src/ui';
 
 export default function Home() {
   const { active, t, n, lang, set } = useApp();
@@ -65,15 +65,16 @@ export default function Home() {
         {/* worlds */}
         <Txt w="black" style={{ fontSize: 22 }}>🗺️ {t('worlds')}</Txt>
         <View style={styles.worlds}>
-          {WORLDS.map((w) => {
+          {WORLDS.map((w, wi) => {
             const list = scenariosOf(w.id);
             const done = list.filter((s) => active.answers[s.id]?.done).length;
             const first = SCENES[list[0].id];
             return (
-              <Bouncy speak key={w.id} label={`${w.title[lang]}, ${done} / ${list.length}`} onPress={() => router.push(`/world/${w.id}`)} style={[styles.world, { borderColor: w.color }]}>
+              <Pop key={w.id} delay={150 + wi * 120} style={{ width: '48%' }}>
+              <Bouncy speak label={`${w.title[lang]}, ${done} / ${list.length}`} onPress={() => router.push(`/world/${w.id}`)} style={[styles.world, { borderColor: w.color }]}>
                 <View style={styles.worldArt}>
                   <Background id={first.bg} />
-                  <View style={[styles.worldEmoji, { backgroundColor: w.color }]}><Txt style={{ fontSize: 26 }} center>{w.emoji}</Txt></View>
+                  <Loop kind="bob" ms={1800 + wi * 300} style={styles.worldEmojiPos}><View style={[styles.worldEmoji, { backgroundColor: w.color }]}><Txt style={{ fontSize: 26 }} center>{w.emoji}</Txt></View></Loop>
                   {done === list.length && <View style={styles.crown}><Txt style={{ fontSize: 26 }}>🏆</Txt></View>}
                 </View>
                 <View style={{ padding: 10, gap: 4 }}>
@@ -82,6 +83,7 @@ export default function Home() {
                   <Txt style={{ fontSize: 12, color: C.muted }}>{n(done)} / {n(list.length)} {t(countNoun(lang, list.length))}</Txt>
                 </View>
               </Bouncy>
+              </Pop>
             );
           })}
         </View>
@@ -92,11 +94,13 @@ export default function Home() {
             { icon: '🛍️', label: t('shop'), go: '/shop', color: '#BE185D' },
             { icon: '🏅', label: t('badges'), go: '/badges', color: '#B45309' },
             { icon: '👨‍👩‍👧', label: t('parents'), go: '/parent', color: '#0369A1' },
-          ].map((a) => (
-            <Bouncy speak key={a.go} label={a.label} onPress={() => router.push(a.go as never)} style={[styles.action, { backgroundColor: a.color }]}>
+          ].map((a, ai) => (
+            <Pop key={a.go} delay={650 + ai * 100} style={{ flex: 1 }}>
+            <Bouncy speak label={a.label} onPress={() => router.push(a.go as never)} style={[styles.action, { backgroundColor: a.color }]}>
               <Txt center style={{ fontSize: 32, lineHeight: 44 }}>{a.icon}</Txt>
               <Txt w="black" center style={{ color: '#fff' }}>{a.label}</Txt>
             </Bouncy>
+            </Pop>
           ))}
         </View>
 
@@ -113,11 +117,12 @@ const styles = StyleSheet.create({
   daily: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.purple, borderRadius: 24, overflow: 'hidden', borderBottomWidth: 6, borderBottomColor: '#5B21B6', ...shadow },
   dailyArt: { width: 90, alignSelf: 'stretch', minHeight: 90 },
   worlds: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between' },
-  world: { width: '48%', backgroundColor: '#fff', borderRadius: 22, overflow: 'hidden', borderWidth: 3, borderBottomWidth: 7, ...shadow },
+  world: { width: '100%', backgroundColor: '#fff', borderRadius: 22, overflow: 'hidden', borderWidth: 3, borderBottomWidth: 7, ...shadow },
   worldArt: { height: 90, overflow: 'hidden' },
-  worldEmoji: { position: 'absolute', top: 8, start: 8, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#fff' },
+  worldEmojiPos: { position: 'absolute', top: 8, start: 8 },
+  worldEmoji: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#fff' },
   crown: { position: 'absolute', top: 6, end: 8 },
   actions: { flexDirection: 'row', gap: 10 },
-  action: { flex: 1, borderRadius: 22, paddingVertical: 10, borderBottomWidth: 6, borderBottomColor: 'rgba(0,0,0,0.2)', ...shadow },
+  action: { borderRadius: 22, paddingVertical: 10, borderBottomWidth: 6, borderBottomColor: 'rgba(0,0,0,0.2)', ...shadow },
   switch: { padding: 10 },
 });

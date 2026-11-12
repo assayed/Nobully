@@ -11,7 +11,7 @@ import { buzz, hush, play, say, sayLines } from '../sound';
 import { signed } from '../i18n';
 import { useApp } from '../store';
 import { C, shadow } from '../theme';
-import { BigButton, Bouncy, Card, Screen, TopBar, Txt } from '../ui';
+import { BigButton, Bouncy, Card, Loop, Pop, Screen, TopBar, Txt } from '../ui';
 import SceneView, { Outcome } from './SceneView';
 
 const OPTION_COLORS = ['#3B82F6', '#F59E0B', '#A855F7'];
@@ -177,9 +177,11 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
           <Animated.View style={{ opacity: panel, transform: [{ scale: panel.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] }}>
             <Card style={{ backgroundColor: outcome === 'good' ? C.goodSoft : C.badSoft, borderWidth: 3, borderColor: outcome === 'good' ? C.good : C.bad, gap: 10, alignItems: 'center' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Txt style={{ fontSize: 56, lineHeight: 76 }}>{outcome === 'good' ? '🎉' : '🤔'}</Txt>
-                <Character look={heroToLook(profile.look)} mood={outcome === 'good' ? 'happy' : 'sad'} arms={outcome === 'good' ? 'up' : 'down'} size={110} />
-                <Txt style={{ fontSize: 56, lineHeight: 76 }}>{outcome === 'good' ? '⭐' : '💭'}</Txt>
+                <Loop kind={outcome === 'good' ? 'spin' : 'swing'} ms={outcome === 'good' ? 2500 : 1600}><Txt style={{ fontSize: 56, lineHeight: 76 }}>{outcome === 'good' ? '🎉' : '🤔'}</Txt></Loop>
+                <Loop kind={outcome === 'good' ? 'bob' : 'swing'} ms={outcome === 'good' ? 600 : 2000}>
+                  <Character look={heroToLook(profile.look)} mood={outcome === 'good' ? 'happy' : 'sad'} arms={outcome === 'good' ? 'up' : 'down'} size={110} />
+                </Loop>
+                <Loop kind="pulse" ms={outcome === 'good' ? 700 : 1600}><Txt style={{ fontSize: 56, lineHeight: 76 }}>{outcome === 'good' ? '⭐' : '💭'}</Txt></Loop>
               </View>
               <Txt w="black" center style={{ fontSize: 26, color: outcome === 'good' ? C.good : C.bad }}>
                 {outcome === 'good' ? t('great') : t('oops')}
@@ -204,22 +206,28 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
               const lit = isPicked || reading === pos + 1;
               const col = OPTION_COLORS[pos];
               return (
-                <Bouncy key={i} label={L(o.text)} onPress={() => tapOption(i)} disabled={used} silent
+                <Pop key={i} k={sc.id + idx} delay={200 + pos * 150}>
+                <Bouncy label={L(o.text)} onPress={() => tapOption(i)} disabled={used} silent
                   style={[styles.option, { borderColor: used ? '#E5E7EB' : col, opacity: used ? 0.45 : 1, backgroundColor: lit ? col + '1F' : '#fff' }, isPicked && { borderWidth: 5 }]}>
                   <View style={[styles.optPic, { backgroundColor: used ? '#F3F4F6' : col + '26' }]}>
                     <View style={[styles.num, { backgroundColor: used ? '#A1A1AA' : col }]}><Txt w="black" center style={{ color: '#fff', fontSize: 18, lineHeight: 30 }}>{n(pos + 1)}</Txt></View>
                     <Character look={heroToLook(profile.look)} mood={isPicked ? 'surprised' : 'neutral'} arms={isPicked ? 'up' : 'down'} size={66} />
-                    <Txt center style={{ fontSize: 46, lineHeight: 62, marginStart: -10 }}>{used ? '❌' : icons[i] ?? '❓'}</Txt>
+                    <Loop kind={lit && !used ? 'pulse' : 'bob'} ms={lit && !used ? 700 : 2000 + pos * 250}>
+                      <Txt center style={{ fontSize: 46, lineHeight: 62, marginStart: -10 }}>{used ? '❌' : icons[i] ?? '❓'}</Txt>
+                    </Loop>
                   </View>
                   <View style={{ flex: 1, gap: 6 }}>
                     <Txt w="bold" style={{ fontSize: 18, lineHeight: 28, textDecorationLine: used ? 'line-through' : 'none' }}>{lit && !used ? '🔊 ' : ''}{L(o.text)}</Txt>
                     {isPicked && (
+                      <Loop kind="pulse" ms={900} style={{ alignSelf: 'flex-start' }}>
                       <Bouncy label={t('pickThis')} onPress={() => choose(i)} silent style={[styles.pick, { backgroundColor: col }]}>
                         <Txt w="black" center style={{ color: '#fff', fontSize: 18 }}>✓ {t('pickThis')}</Txt>
                       </Bouncy>
+                      </Loop>
                     )}
                   </View>
                 </Bouncy>
+                </Pop>
               );
             })}
             <Txt center style={{ color: C.muted, fontSize: 13 }}>{t('tapAnswer')}</Txt>

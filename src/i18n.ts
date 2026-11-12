@@ -4,6 +4,7 @@ type Entry = { ar: string; en: string; arF?: string };
 
 const S = {
   appName: { ar: 'هيرو كيد', en: 'HeroKid' },
+  credit: { ar: 'مدرسة التميز: الطالبة فيروز أحمد', en: 'Excellence School: student Fayrouz Ahmed' },
   tagline: { ar: 'الاختيار الصح بيعمل أبطال!', en: 'Good choices make heroes!' },
   whoPlays: { ar: 'مين هيلعب النهارده؟', en: 'Who is playing today?' },
   newHero: { ar: 'بطل جديد', en: 'New hero' },

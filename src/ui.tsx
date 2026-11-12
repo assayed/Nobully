@@ -152,3 +152,38 @@ const styles = StyleSheet.create({
   back: { width: 46, height: 46, borderRadius: 23, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', ...shadow },
   card: { backgroundColor: C.card, borderRadius: 24, padding: 16, ...shadow },
 });
+
+/** Springs its children in (fade + rise + grow) after `delay` ms. Change `k` to replay. */
+export function Pop({ children, delay = 0, style, k }: { children: ReactNode; delay?: number; style?: StyleProp<ViewStyle>; k?: string | number }) {
+  const v = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    v.setValue(0);
+    Animated.sequence([Animated.delay(delay), Animated.spring(v, { toValue: 1, friction: 6, tension: 80, useNativeDriver: true })]).start();
+  }, [k, delay, v]);
+  return (
+    <Animated.View style={[style, { opacity: v.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1, 1] }), transform: [
+      { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) },
+      { scale: v.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) },
+    ] }]}>{children}</Animated.View>
+  );
+}
+
+/** A gentle endless motion: 'bob' up and down, 'pulse' grow and shrink, 'swing' rock side to side, 'spin'. */
+export function Loop({ children, kind = 'bob', ms = 1400, style }: { children: ReactNode; kind?: 'bob' | 'pulse' | 'swing' | 'spin'; ms?: number; style?: StyleProp<ViewStyle> }) {
+  const v = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const a = kind === 'spin'
+      ? Animated.loop(Animated.timing(v, { toValue: 1, duration: ms, easing: Easing.linear, useNativeDriver: true }))
+      : Animated.loop(Animated.sequence([
+          Animated.timing(v, { toValue: 1, duration: ms / 2, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(v, { toValue: 0, duration: ms / 2, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ]));
+    a.start();
+    return () => a.stop();
+  }, [kind, ms, v]);
+  const t = kind === 'bob' ? [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) }]
+    : kind === 'pulse' ? [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] }) }]
+    : kind === 'swing' ? [{ rotate: v.interpolate({ inputRange: [0, 1], outputRange: ['-6deg', '6deg'] }) }]
+    : [{ rotate: v.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }];
+  return <Animated.View style={[style, { transform: t }]}>{children}</Animated.View>;
+}
