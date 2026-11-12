@@ -33,7 +33,7 @@ export default function Home() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}>
         {/* hero header */}
         <View style={[styles.header, shadow]}>
-          <Bouncy label={active.name} onPress={() => { play('coin'); }} style={{ alignItems: 'center' }}>
+          <Bouncy speak label={active.name} onPress={() => { play('coin'); }} style={{ alignItems: 'center' }}>
             <HeroAvatar look={active.look} size={84} />
           </Bouncy>
           <View style={{ flex: 1, gap: 6 }}>
@@ -48,7 +48,7 @@ export default function Home() {
         </View>
 
         {/* daily challenge */}
-        <Bouncy label={t('daily')} onPress={() => router.push('/daily')} style={[styles.daily, dailyDone && { opacity: 0.75 }]}>
+        <Bouncy speak label={t('daily')} onPress={() => router.push('/daily')} style={[styles.daily, dailyDone && { opacity: 0.75 }]}>
           <View style={styles.dailyArt}>{dailySpec && <Background id={dailySpec.bg} />}</View>
           <View style={{ flex: 1, padding: 12, gap: 2 }}>
             <Txt w="black" style={{ fontSize: 20, color: '#fff' }}>📅 {t('daily')}</Txt>
@@ -70,7 +70,7 @@ export default function Home() {
             const done = list.filter((s) => active.answers[s.id]?.done).length;
             const first = SCENES[list[0].id];
             return (
-              <Bouncy key={w.id} label={`${w.title[lang]}, ${done} / ${list.length}`} onPress={() => router.push(`/world/${w.id}`)} style={[styles.world, { borderColor: w.color }]}>
+              <Bouncy speak key={w.id} label={`${w.title[lang]}, ${done} / ${list.length}`} onPress={() => router.push(`/world/${w.id}`)} style={[styles.world, { borderColor: w.color }]}>
                 <View style={styles.worldArt}>
                   <Background id={first.bg} />
                   <View style={[styles.worldEmoji, { backgroundColor: w.color }]}><Txt style={{ fontSize: 26 }} center>{w.emoji}</Txt></View>
@@ -93,14 +93,14 @@ export default function Home() {
             { icon: '🏅', label: t('badges'), go: '/badges', color: '#B45309' },
             { icon: '👨‍👩‍👧', label: t('parents'), go: '/parent', color: '#0369A1' },
           ].map((a) => (
-            <Bouncy key={a.go} label={a.label} onPress={() => router.push(a.go as never)} style={[styles.action, { backgroundColor: a.color }]}>
+            <Bouncy speak key={a.go} label={a.label} onPress={() => router.push(a.go as never)} style={[styles.action, { backgroundColor: a.color }]}>
               <Txt center style={{ fontSize: 32, lineHeight: 44 }}>{a.icon}</Txt>
               <Txt w="black" center style={{ color: '#fff' }}>{a.label}</Txt>
             </Bouncy>
           ))}
         </View>
 
-        <Bouncy onPress={() => { set({ activeId: null }); router.replace('/profiles'); }} style={styles.switch}>
+        <Bouncy speak onPress={() => { set({ activeId: null }); router.replace('/profiles'); }} style={styles.switch}>
           <Txt w="bold" center style={{ color: C.muted }}>🔄 {t('whoPlays')}</Txt>
         </Bouncy>
       </ScrollView>

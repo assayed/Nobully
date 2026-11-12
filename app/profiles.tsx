@@ -14,21 +14,21 @@ export default function Profiles() {
       <TopBar title={t('whoPlays')} />
       <ScrollView contentContainerStyle={styles.grid}>
         {profiles.map((p) => (
-          <Bouncy key={p.id} label={`${p.name}, ${p.coins}`} style={styles.card} onPress={() => { set({ activeId: p.id }); router.replace('/home'); }}>
+          <Bouncy speak key={p.id} label={`${p.name}, ${p.coins}`} style={styles.card} onPress={() => { set({ activeId: p.id }); router.replace('/home'); }}>
             <HeroAvatar look={p.look} size={80} />
             <Txt w="black" center style={{ fontSize: 20 }} numberOfLines={1}>{p.name}</Txt>
             <CoinPill value={p.coins} />
           </Bouncy>
         ))}
         {profiles.length < MAX_PROFILES && (
-          <Bouncy label={t('newHero')} style={[styles.card, styles.add]} onPress={() => router.push('/new-profile')}>
+          <Bouncy speak label={t('newHero')} style={[styles.card, styles.add]} onPress={() => router.push('/new-profile')}>
             <Txt center style={{ fontSize: 64, lineHeight: 90 }}>➕</Txt>
             <Txt w="black" center style={{ fontSize: 20, color: C.primaryDark }}>{t('newHero')}</Txt>
           </Bouncy>
         )}
       </ScrollView>
       <View style={{ padding: 16 }}>
-        <Bouncy label={t('parents')} onPress={() => router.push('/parent')} style={styles.parent}>
+        <Bouncy speak label={t('parents')} onPress={() => router.push('/parent')} style={styles.parent}>
           <Txt w="bold" center>👨‍👩‍👧 {t('parents')} 🔒</Txt>
         </Bouncy>
       </View>

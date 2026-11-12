@@ -6,7 +6,7 @@ import Character from './art/Character';
 import Prop from './art/Props';
 import { heroToLook } from './game/hero';
 import { HeroLook } from './game/rules';
-import { buzz, play } from './sound';
+import { buzz, play, say } from './sound';
 import { useApp } from './store';
 import { C, F, shadow } from './theme';
 
@@ -25,7 +25,8 @@ export function Screen({ children, bg = C.bg, style }: { children: ReactNode; bg
   const { rtl } = useApp();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['top', 'bottom']}>
-      <View style={[{ flex: 1, direction: rtl ? 'rtl' : 'ltr' }, style]}>{children}</View>
+      {/* phones use the full width; tablets get a centred column so cards and drawings keep their size */}
+      <View style={[{ flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center', direction: rtl ? 'rtl' : 'ltr' }, style]}>{children}</View>
     </SafeAreaView>
   );
 }
@@ -33,8 +34,9 @@ export function Screen({ children, bg = C.bg, style }: { children: ReactNode; bg
 const APressable = Animated.createAnimatedComponent(Pressable);
 
 /** A pressable that squishes and springs back, with a tap sound. */
-export function Bouncy({ onPress, children, style, disabled, silent, label }: { onPress?: () => void; children: ReactNode; style?: StyleProp<ViewStyle>; disabled?: boolean; silent?: boolean; label?: string }) {
+export function Bouncy({ onPress, children, style, disabled, silent, label, speak }: { onPress?: () => void; children: ReactNode; style?: StyleProp<ViewStyle>; disabled?: boolean; silent?: boolean; label?: string; speak?: boolean }) {
   const s = useRef(new Animated.Value(1)).current;
+  const { readAloud, lang } = useApp();
   return (
     <APressable
       accessibilityRole="button"
@@ -43,7 +45,7 @@ export function Bouncy({ onPress, children, style, disabled, silent, label }: { 
       disabled={disabled}
       onPressIn={() => Animated.spring(s, { toValue: 0.93, useNativeDriver: true, speed: 50 }).start()}
       onPressOut={() => Animated.spring(s, { toValue: 1, useNativeDriver: true, friction: 3 }).start()}
-      onPress={() => { if (!silent) { play('tap'); buzz('tap'); } onPress?.(); }}
+      onPress={() => { if (!silent) { play('tap'); buzz('tap'); } if (speak && readAloud && label) say(label, lang); onPress?.(); }}
       style={[style, { transform: [{ scale: s }] }]}
     >
       {children}
@@ -53,7 +55,7 @@ export function Bouncy({ onPress, children, style, disabled, silent, label }: { 
 
 export function BigButton({ label, onPress, color = C.primary, icon, disabled, style }: { label: string; onPress: () => void; color?: string; icon?: string; disabled?: boolean; style?: StyleProp<ViewStyle> }) {
   return (
-    <Bouncy label={label} onPress={onPress} disabled={disabled} style={[styles.big, { backgroundColor: disabled ? '#D4D4D8' : color, borderBottomColor: 'rgba(0,0,0,0.2)' }, style]}>
+    <Bouncy label={label} speak onPress={onPress} disabled={disabled} style={[styles.big, { backgroundColor: disabled ? '#D4D4D8' : color, borderBottomColor: 'rgba(0,0,0,0.2)' }, style]}>
       {icon ? <Txt style={{ fontSize: 22 }}>{icon}</Txt> : null}
       <Txt w="black" center style={{ color: '#fff', fontSize: 20 }}>{label}</Txt>
     </Bouncy>

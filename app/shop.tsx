@@ -47,7 +47,7 @@ export default function Shop() {
           const on = owned && isEquipped(active.look, item);
           const afford = active.coins >= item.price;
           return (
-            <Bouncy key={item.id} label={`${item[lang]}, ${owned ? (on ? t('remove') : t('wear')) : item.price}`} onPress={() => tap(item)} style={[styles.item, on && styles.on]}>
+            <Bouncy speak key={item.id} label={`${item[lang]}, ${owned ? (on ? t('remove') : t('wear')) : item.price}`} onPress={() => tap(item)} style={[styles.item, on && styles.on]}>
               <View style={styles.art}>
                 {item.kind === 'pet'
                   ? <Prop id={item.value as never} size={64} />

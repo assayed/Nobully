@@ -36,7 +36,7 @@ export default function Title() {
   return (
     <Screen bg="#BAE6FD">
       <View style={styles.langRow}>
-        <Bouncy label={t('language')} onPress={() => set({ lang: lang === 'ar' ? 'en' : 'ar' })} style={styles.lang}>
+        <Bouncy speak label={t('language')} onPress={() => set({ lang: lang === 'ar' ? 'en' : 'ar' })} style={styles.lang}>
           <Txt w="bold" center>🌐 {t('language')}</Txt>
         </Bouncy>
       </View>

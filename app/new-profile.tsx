@@ -9,7 +9,7 @@ import { useApp } from '../src/store';
 import { C, F, shadow } from '../src/theme';
 import { BigButton, Bouncy, Card, HeroAvatar, Screen, TopBar, Txt } from '../src/ui';
 
-const GENDERS: HeroLook['gender'][] = ['boy', 'girl', 'hijab'];
+const GENDERS: HeroLook['gender'][] = ['boy', 'girl'];
 
 export default function NewProfile() {
   const { t, rtl, upsertProfile, set } = useApp();
@@ -65,11 +65,11 @@ export default function NewProfile() {
 
         <Card style={{ gap: 10 }}>
           <Txt w="bold" style={{ fontSize: 18 }}>🎨 {t('pickLook')}</Txt>
-          <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'center' }}>
+          <View style={{ flexDirection: 'row', gap: 16, justifyContent: 'center' }}>
             {GENDERS.map((g) => (
-              <Bouncy key={g} label={t(g)} onPress={() => setGender(g)} style={[styles.choice, gender === g && styles.chosen]}>
-                <Character look={heroToLook({ gender: g, skin, shirt: DEFAULT_SHIRT[g] })} mood="happy" size={62} />
-                <Txt w="bold" center style={{ fontSize: 13 }}>{t(g)}</Txt>
+              <Bouncy key={g} speak label={t(g)} onPress={() => setGender(g)} style={[styles.choice, gender === g && styles.chosen]}>
+                <Character look={heroToLook({ gender: g, skin, shirt: DEFAULT_SHIRT[g] })} mood="happy" arms={gender === g ? 'up' : 'down'} size={100} />
+                <Txt w="black" center style={{ fontSize: 18 }}>{t(g)}</Txt>
               </Bouncy>
             ))}
           </View>
@@ -91,7 +91,7 @@ export default function NewProfile() {
 
 const styles = StyleSheet.create({
   input: { fontFamily: F.bold, fontSize: 22, backgroundColor: '#FFF7ED', borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 2, borderColor: C.border, color: C.ink },
-  choice: { alignItems: 'center', padding: 6, borderRadius: 20, borderWidth: 3, borderColor: 'transparent', backgroundColor: '#F8FAFC', width: 96 },
+  choice: { alignItems: 'center', padding: 6, borderRadius: 20, borderWidth: 3, borderColor: 'transparent', backgroundColor: '#F8FAFC', width: 140 },
   chosen: { borderColor: C.primary, backgroundColor: '#FFEDD5' },
   swatch: { width: 46, height: 46, borderRadius: 23, borderWidth: 2, borderColor: '#fff', ...shadow },
 });

@@ -7,7 +7,7 @@ import { OPTION_ICONS, SCENES } from '../art/scenes';
 import { scenarioById } from '../content/scenarios';
 import { heroToLook } from '../game/hero';
 import { applyAnswer, BADGES, dayKey } from '../game/rules';
-import { buzz, hush, play, say } from '../sound';
+import { buzz, hush, play, say, sayLines } from '../sound';
 import { signed } from '../i18n';
 import { useApp } from '../store';
 import { C, shadow } from '../theme';
@@ -52,11 +52,19 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
     return o;
   }, [sc]);
 
+  // which line is being read (-1 none, 0 question, 1..3 answers) and which answer is picked
+  const [reading, setReading] = useState(-1);
+  const [picked, setPicked] = useState<number | null>(null);
+  const NUMS = [t('one'), t('two'), t('three')];
+  const readAll = () => {
+    if (!sc) return;
+    sayLines([L(sc.question), ...order.map((i, pos) => `${NUMS[pos]}. ${L(sc.options[i].text)}`)], lang, setReading);
+  };
   useEffect(() => {
+    setPicked(null);
     if (!sc || !readAloud) return;
-    const opts = order.map((i) => L(sc.options[i].text)).join(` ${t('or')} `);
-    say(`${L(sc.question)} ${opts}`, lang);
-    return () => hush();
+    const id = setTimeout(readAll, 500);
+    return () => { clearTimeout(id); hush(); };
   }, [sc, order, lang, readAloud]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // floating "+20" / "−30"
@@ -80,8 +88,18 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
   const spec = SCENES[sc.id];
   const icons = OPTION_ICONS[sc.id] ?? [];
 
+  // first tap: hear it; second tap (or the check button): choose it
+  const tapOption = (i: number) => {
+    if (outcome === 'good' || wrongs.includes(i)) return;
+    if (picked === i) { choose(i); return; }
+    play('tap'); buzz('tap');
+    setPicked(i); setReading(-1);
+    say(L(sc.options[i].text), lang);
+  };
+
   const choose = (i: number) => {
     if (outcome === 'good' || wrongs.includes(i)) return;
+    setPicked(null); setReading(-1);
     const good = sc.options[i].good;
     const res = applyAnswer(profile, { scenarioId: sc.id, option: i, good, hadWrong: wrongs.length > 0, practice, daily: mode === 'daily' });
     app.upsertProfile(res.profile);
@@ -100,7 +118,7 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
       setWrongs((w) => [...w, i]);
       play('wrong');
       buzz('wrong');
-      if (readAloud) say(sc.options[i].why ? L(sc.options[i].why!) : t('oops'), lang);
+      if (readAloud) say(`${t('oops')}. ${sc.options[i].why ? L(sc.options[i].why!) : ''}`, lang);
     }
   };
 
@@ -148,20 +166,28 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
           )}
         </View>
 
-        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 3, borderColor: reading === 0 ? C.primary : 'transparent' }}>
           <Txt w="bold" style={{ flex: 1, fontSize: 19, lineHeight: 30 }}>{L(sc.question)}</Txt>
-          <Bouncy label={t('listen')} onPress={() => say(`${L(sc.question)} ${order.map((i) => L(sc.options[i].text)).join(` ${t('or')} `)}`, lang)} style={styles.speaker}>
-            <Txt style={{ fontSize: 24 }} center>🔊</Txt>
+          <Bouncy label={t('listen')} onPress={readAll} style={[styles.speaker, reading >= 0 && { backgroundColor: '#FDE68A' }]}>
+            <Txt style={{ fontSize: 28 }} center>🔊</Txt>
           </Bouncy>
         </Card>
 
         {outcome !== 'none' ? (
           <Animated.View style={{ opacity: panel, transform: [{ scale: panel.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] }}>
             <Card style={{ backgroundColor: outcome === 'good' ? C.goodSoft : C.badSoft, borderWidth: 3, borderColor: outcome === 'good' ? C.good : C.bad, gap: 10, alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Txt style={{ fontSize: 56, lineHeight: 76 }}>{outcome === 'good' ? '🎉' : '🤔'}</Txt>
+                <Character look={heroToLook(profile.look)} mood={outcome === 'good' ? 'happy' : 'sad'} arms={outcome === 'good' ? 'up' : 'down'} size={110} />
+                <Txt style={{ fontSize: 56, lineHeight: 76 }}>{outcome === 'good' ? '⭐' : '💭'}</Txt>
+              </View>
               <Txt w="black" center style={{ fontSize: 26, color: outcome === 'good' ? C.good : C.bad }}>
-                {outcome === 'good' ? `🎉 ${t('great')}` : `😟 ${t('oops')}`}
+                {outcome === 'good' ? t('great') : t('oops')}
               </Txt>
-              <Txt center style={{ fontSize: 18, lineHeight: 30 }}>{feedbackText}</Txt>
+              <Bouncy label={feedbackText} onPress={() => say(feedbackText, lang)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Txt style={{ fontSize: 24 }}>🔊</Txt>
+                <Txt center style={{ fontSize: 18, lineHeight: 30, flexShrink: 1 }}>{feedbackText}</Txt>
+              </Bouncy>
               {outcome === 'good' ? (
                 <BigButton label={idx + 1 >= queue.length ? t('finish') : t('next')} icon="⭐" color={C.good} onPress={next} style={{ alignSelf: 'stretch' }} />
               ) : (
@@ -174,16 +200,29 @@ export default function Play({ ids, mode, title, color }: { ids: string[]; mode:
             {order.map((i, pos) => {
               const o = sc.options[i];
               const used = wrongs.includes(i);
+              const isPicked = picked === i;
+              const lit = isPicked || reading === pos + 1;
+              const col = OPTION_COLORS[pos];
               return (
-                <Bouncy key={i} label={L(o.text)} onPress={() => choose(i)} disabled={used} silent style={[styles.option, { borderColor: used ? '#E5E7EB' : OPTION_COLORS[pos], opacity: used ? 0.45 : 1 }]}>
-                  <View style={[styles.optIcon, { backgroundColor: used ? '#F3F4F6' : OPTION_COLORS[pos] + '22' }]}>
-                    <Txt center style={{ fontSize: 30, lineHeight: 42 }}>{used ? '❌' : icons[i] ?? '❓'}</Txt>
+                <Bouncy key={i} label={L(o.text)} onPress={() => tapOption(i)} disabled={used} silent
+                  style={[styles.option, { borderColor: used ? '#E5E7EB' : col, opacity: used ? 0.45 : 1, backgroundColor: lit ? col + '1F' : '#fff' }, isPicked && { borderWidth: 5 }]}>
+                  <View style={[styles.optPic, { backgroundColor: used ? '#F3F4F6' : col + '26' }]}>
+                    <View style={[styles.num, { backgroundColor: used ? '#A1A1AA' : col }]}><Txt w="black" center style={{ color: '#fff', fontSize: 18, lineHeight: 30 }}>{n(pos + 1)}</Txt></View>
+                    <Character look={heroToLook(profile.look)} mood={isPicked ? 'surprised' : 'neutral'} arms={isPicked ? 'up' : 'down'} size={66} />
+                    <Txt center style={{ fontSize: 46, lineHeight: 62, marginStart: -10 }}>{used ? '❌' : icons[i] ?? '❓'}</Txt>
                   </View>
-                  <Txt w="bold" style={{ flex: 1, fontSize: 18, lineHeight: 28, textDecorationLine: used ? 'line-through' : 'none' }}>{L(o.text)}</Txt>
+                  <View style={{ flex: 1, gap: 6 }}>
+                    <Txt w="bold" style={{ fontSize: 18, lineHeight: 28, textDecorationLine: used ? 'line-through' : 'none' }}>{lit && !used ? '🔊 ' : ''}{L(o.text)}</Txt>
+                    {isPicked && (
+                      <Bouncy label={t('pickThis')} onPress={() => choose(i)} silent style={[styles.pick, { backgroundColor: col }]}>
+                        <Txt w="black" center style={{ color: '#fff', fontSize: 18 }}>✓ {t('pickThis')}</Txt>
+                      </Bouncy>
+                    )}
+                  </View>
                 </Bouncy>
               );
             })}
-            <Txt center style={{ color: C.muted, fontSize: 13 }}>{t('tapToPlay')}</Txt>
+            <Txt center style={{ color: C.muted, fontSize: 13 }}>{t('tapAnswer')}</Txt>
           </View>
         )}
       </ScrollView>
@@ -246,7 +285,9 @@ const styles = StyleSheet.create({
   float: { position: 'absolute', alignSelf: 'center', top: '30%', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.92)', paddingHorizontal: 16, borderRadius: 30 },
   speaker: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#FEF3C7', alignItems: 'center', justifyContent: 'center' },
   option: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 22, borderWidth: 3, borderBottomWidth: 6, padding: 10, ...shadow },
-  optIcon: { width: 58, height: 58, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  optPic: { width: 128, height: 104, borderRadius: 18, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 4, overflow: 'hidden' },
+  num: { position: 'absolute', top: 4, start: 4, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', zIndex: 2 },
+  pick: { borderRadius: 16, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
   overlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: 30 },
   badgeCard: { backgroundColor: '#fff', borderRadius: 30, padding: 24, alignItems: 'center', width: '100%', maxWidth: 360, overflow: 'hidden' },
 });
