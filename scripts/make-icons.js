@@ -36,6 +36,11 @@ const svg = (inner, size = 1024, bg = 'none') =>
   await shot(svg(`<g transform="translate(512 512) scale(0.62) translate(-512 -512)" fill="#000"><circle cx="512" cy="470" r="210"/><rect x="362" y="640" width="300" height="300" rx="80"/></g>`), 'android-icon-monochrome.png', 1024);
   await shot(svg(`<g transform="translate(512 512) scale(0.8) translate(-512 -512)">${hero(false)}</g>`), 'splash-icon.png', 1024);
   await shot(svg(hero(true), 48), 'favicon.png', 48, false);
+  // PWA (home-screen) icons
+  await shot(svg(hero(true), 192), 'pwa-192.png', 192, false);
+  await shot(svg(hero(true), 512), 'pwa-512.png', 512, false);
+  await shot(svg(`<rect width="1024" height="1024" fill="#FF7A00"/><circle cx="512" cy="512" r="400" fill="#FFB347"/><g transform="translate(512 512) scale(0.7) translate(-512 -512)">${hero(false)}</g>`, 512), 'pwa-maskable-512.png', 512, false);
+  await shot(svg(hero(true), 180), 'apple-touch-icon.png', 180, false);
   await browser.close();
   console.log('icons written');
 })();

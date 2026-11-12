@@ -36,7 +36,8 @@
     "typecheck": "tsc --noEmit",
     "sounds": "node scripts/make-sounds.js",
     "icons": "node scripts/make-icons.js",
-    "export:web": "expo export --platform web"
+    "export:web": "expo export --platform web",
+    "build:pwa": "expo export -p web && node scripts/build-pwa.js"
   },
   "private": true
 }

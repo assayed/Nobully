@@ -58,3 +58,8 @@ src/content/    the 30 situations (ar/en)
 src/game/       rules, levels, badges, shop
 docs/           art bible, screenshots
 ```
+
+## PWA test build
+`npm run build:pwa` exports the web app and writes two folders (both git-ignored):
+- `dist-pwa/` is an installable, offline-capable PWA (manifest, icons, service worker). Host it at the root of any HTTPS (sub)domain, for example `test.herokid.app/`, with every unknown path falling back to `index.html`.
+- `dist-artifact/` is the same game prepared for a Claude Artifact link (no install or offline there).
