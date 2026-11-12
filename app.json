@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "HeroKid",
+    "slug": "herokid",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.herokid.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FF7A00",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.herokid.app",
+      "permissions": [],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "backgroundColor": "#FFF7E8"
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "scheme": "herokid",
+    "description": "HeroKid: a kids' game for good behaviour and anti-bullying. Arabic first, English switch."
+  }
+}
